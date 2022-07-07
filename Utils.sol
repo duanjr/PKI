@@ -1,11 +1,12 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/Strings.sol";
 contract Utils {
-    function Web3Hash( string memory message) public pure returns (bytes32) {
+    function Web3Hash( string memory message) internal pure returns (bytes32) {
         bytes memory _message = bytes(message);
         return keccak256(bytes(abi.encodePacked(bytes("\x19Ethereum Signed Message:\n"), bytes(Strings.toString(_message.length)), _message)));
     }
 
+    //!!!lowercase output
     function addressToString(address _address) public pure returns(string memory) {
         bytes32 _bytes = bytes32(uint256(uint160(_address)));
         bytes memory HEX = "0123456789abcdef";
@@ -17,9 +18,12 @@ contract Utils {
         return string(_string);
     }
 
-    function verifySignature(address user, uint8 v, bytes32 r, bytes32 s) public pure returns (address, bool){
-        string memory message = addressToString(user);
+    function verifySignature(string memory message, uint8 v, bytes32 r, bytes32 s) public pure returns (address){
         bytes32 web3Hash = Web3Hash(message);
-        return (ecrecover(web3Hash,v,r,s),ecrecover(web3Hash,v,r,s) == user);
+        return ecrecover(web3Hash,v,r,s);
+    }
+
+    function generateAddressFromPublickey (bytes calldata publicKey) public pure returns(address) {
+        return address(uint160(uint256(keccak256(publicKey)) & 0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
     }
 }
